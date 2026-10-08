@@ -226,19 +226,19 @@ export default function MainApp() {
               </button>
             </div>
 
-            {/* Profile Avatar Card */}
+            {/* Robotics Engine Status Badge */}
             <div className="pt-1">
               <div className="flex items-center justify-between p-2 rounded-lg bg-[#1b1b19] border border-[#262624]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-md bg-[#2d1e18] text-[#d97757] flex items-center justify-center font-bold text-xs">
-                    M
+                  <div className="w-6 h-6 rounded-md bg-[#1f2824] text-[#a7c4bc] flex items-center justify-center font-bold text-xs">
+                    <Cpu size={13} />
                   </div>
                   <div>
-                    <div className="text-xs font-medium text-[#f4f4f0] leading-tight">MOHD</div>
-                    <div className="text-[10px] text-[#6e6e69] leading-tight">Robotics Lab</div>
+                    <div className="text-xs font-medium text-[#f4f4f0] leading-tight">Simulation Engine</div>
+                    <div className="text-[10px] text-[#6e6e69] leading-tight">PBL Autonomous Lab v1.0</div>
                   </div>
                 </div>
-                <ChevronDown size={13} className="text-[#6e6e69]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
               </div>
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function MainApp() {
 
             <div className="flex items-baseline gap-2">
               <h1 className="font-claude-serif text-xl font-normal text-[#f4f4f0] tracking-tight">
-                Good morning, MOHD
+                Autonomous Vacuum Lab
               </h1>
               <span className="text-xs text-[#8e8e89] font-sans">
                 / {activeNav === 'dashboard' ? 'Overview' : activeNav === 'simulation' ? 'Laboratory' : activeNav === 'compare' ? 'Benchmark' : 'Directory'}
