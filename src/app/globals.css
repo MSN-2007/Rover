@@ -1,28 +1,27 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --background: #141413;
   --sidebar-bg: #141413;
   --surface: #1b1b19;
-  --surface-hover: #242422;
-  --surface-active: #2a2a27;
+  --surface-hover: #232320;
+  --surface-active: #2a2a26;
   --border: #262624;
   --border-subtle: #1e1e1c;
+  --border-active: #3c3c37;
   --foreground: #f4f4f0;
   --foreground-muted: #8e8e89;
   --foreground-subtle: #6e6e69;
   
   /* Claude Anthropic model card accents */
   --claude-coral: #d97757;
-  --claude-coral-bg: #2d1e18;
+  --claude-coral-bg: #261914;
   --claude-blue: #60a5fa;
-  --claude-blue-bg: #192333;
+  --claude-blue-bg: #141f2e;
   --claude-cream: #faf7f2;
-  --claude-cream-bg: #272622;
+  --claude-cream-bg: #22211e;
   --claude-sage: #a7c4bc;
-  --claude-sage-bg: #192522;
+  --claude-sage-bg: #15221f;
 }
 
 * {
@@ -39,9 +38,9 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Claude editorial serif font for main headers */
+/* Claude editorial serif font */
 .font-claude-serif {
-  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  font-family: "Georgia", "Cambria", "Times New Roman", Times, serif;
 }
 
 /* Claude refined minimalist scrollbar */
@@ -63,7 +62,7 @@ html, body {
   background: #3a3a36;
 }
 
-/* Claude Console style inputs & range */
+/* Range input styling */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -82,17 +81,17 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: #f4f4f0;
   border: 2px solid #141413;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
   cursor: pointer;
-  transition: transform 0.1s ease;
+  transition: transform 0.12s ease, background 0.12s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
+  transform: scale(1.2);
   background: #ffffff;
 }
 
-/* Monospace telemetry */
+/* Monospace telemetry data */
 .font-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-feature-settings: 'tnum';
@@ -101,5 +100,52 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* Smooth slide transitions */
 .transition-slide {
-  transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+/* Glassmorphism surfaces */
+.glass-panel {
+  background: rgba(27, 27, 25, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-toolbar {
+  background: rgba(24, 24, 22, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Subtle glow badges */
+.glow-coral {
+  box-shadow: 0 0 16px rgba(217, 119, 87, 0.25);
+}
+
+.glow-blue {
+  box-shadow: 0 0 16px rgba(96, 165, 250, 0.25);
+}
+
+.glow-sage {
+  box-shadow: 0 0 16px rgba(167, 196, 188, 0.25);
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.shimmer-active {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-active::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+  animation: shimmer 2.5s infinite;
 }

@@ -274,6 +274,11 @@ export default function MainApp() {
 
           {/* Top Right Action Pills (Claude Console style) */}
           <div className="flex items-center gap-2.5 text-xs">
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#1b1b19] border border-[#262624] text-[11px] font-mono">
+              <span className={`w-2 h-2 rounded-full ${isRunning && !isPaused ? 'bg-[#10b981] animate-pulse' : 'bg-[#d97757]'}`} />
+              <span className="text-[#8e8e89]">{isRunning && !isPaused ? 'ROVER ROVING' : 'SYSTEM READY'}</span>
+            </div>
+
             <button
               onClick={() => resetSimulation()}
               className="px-3 py-1.5 rounded-lg bg-[#1b1b19] hover:bg-[#222220] border border-[#262624] text-[#d1d1cd] font-medium transition-all flex items-center gap-1.5"
@@ -411,10 +416,37 @@ export default function MainApp() {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-[#8e8e89] font-mono">
+                    <div className="flex items-center gap-3">
+                      <div className="hidden md:flex items-center gap-1 bg-[#141413] p-1 rounded-lg border border-[#262624] text-[11px]">
+                        {[
+                          { id: 'furniture', label: 'Living Room' },
+                          { id: 'multi_room', label: 'Apartment' },
+                          { id: 'corridor', label: 'Hallways' },
+                          { id: 'random', label: 'Obstacles' },
+                        ].map(env => {
+                          const active = useSimulationStore.getState().config.mapType === env.id;
+                          return (
+                            <button
+                              key={env.id}
+                              onClick={() => {
+                                useSimulationStore.getState().setConfig({ mapType: env.id as any });
+                                useSimulationStore.getState().initSimulation();
+                              }}
+                              className={`px-2.5 py-1 rounded-md transition-all font-sans ${
+                                active
+                                  ? 'bg-[#262622] text-[#f4f4f0] font-medium border border-[#383834] shadow-sm'
+                                  : 'text-[#8e8e89] hover:text-[#f4f4f0] hover:bg-[#1a1a18]'
+                              }`}
+                            >
+                              {env.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="text-xs text-[#8e8e89] font-mono bg-[#141413] px-2.5 py-1.5 rounded-lg border border-[#262624]">
                         Algorithm: <strong className="text-[#60a5fa] font-semibold">{selectedAlgorithms[0]?.toUpperCase() ?? 'A*'}</strong>
-                      </span>
+                      </div>
                     </div>
                   </div>
 
@@ -435,100 +467,165 @@ export default function MainApp() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                    {/* Model 1: A* (Fable blue style) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Model 1: A* Search (Claude Fable Blue) */}
                     <div
                       onClick={() => selectAlgorithm('astar')}
-                      className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between ${
+                      className={`cursor-pointer rounded-xl border overflow-hidden transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 hover:shadow-xl ${
                         selectedAlgorithms.includes('astar')
-                          ? 'bg-[#192333] border-[#60a5fa] shadow-sm'
+                          ? 'bg-[#1b1b19] border-[#60a5fa] ring-1 ring-[#60a5fa]/60 shadow-lg'
                           : 'bg-[#1b1b19] border-[#262624] hover:border-[#383834]'
                       }`}
                     >
                       <div>
-                        <div className="w-full h-20 rounded-lg bg-[#60a5fa]/20 border border-[#60a5fa]/30 flex items-center justify-center mb-3">
-                          <Compass size={28} className="text-[#60a5fa]" />
+                        {/* Top Colored Illustration Banner */}
+                        <div className="w-full h-24 bg-[#60a5fa] flex items-center justify-center relative overflow-hidden">
+                          <svg className="w-12 h-12 text-[#141413] transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <circle cx="24" cy="24" r="8" fill="#141413" fillOpacity="0.1" />
+                            <circle cx="16" cy="18" r="3" fill="#141413" />
+                            <circle cx="32" cy="18" r="3" fill="#141413" />
+                            <circle cx="24" cy="30" r="3" fill="#141413" />
+                            <circle cx="24" cy="12" r="2.5" fill="#141413" />
+                            <line x1="16" y1="18" x2="24" y2="30" />
+                            <line x1="32" y1="18" x2="24" y2="30" />
+                            <line x1="16" y1="18" x2="24" y2="12" />
+                            <line x1="32" y1="18" x2="24" y2="12" />
+                          </svg>
+                          {selectedAlgorithms.includes('astar') && (
+                            <span className="absolute top-2 right-2 text-[9px] font-bold bg-[#141413] text-[#60a5fa] px-1.5 py-0.5 rounded shadow">
+                              ACTIVE
+                            </span>
+                          )}
                         </div>
-                        <div className="font-semibold text-sm text-[#f4f4f0]">A* Heuristic Search</div>
-                        <p className="text-xs text-[#8e8e89] mt-1 line-clamp-2">
-                          Optimal global pathfinding with Euclidean guidance.
-                        </p>
+                        <div className="p-3.5 pb-2">
+                          <div className="flex items-center justify-between">
+                            <div className="font-semibold text-sm text-[#f4f4f0] group-hover:text-[#60a5fa] transition-colors">A* Search</div>
+                            <span className="text-[10px] font-mono text-[#8e8e89]">O(V log V)</span>
+                          </div>
+                          <div className="text-xs text-[#8e8e89] mt-0.5">Most capable · Research</div>
+                        </div>
                       </div>
-                      <div className="flex gap-1.5 mt-3 pt-2 border-t border-[#232321]">
-                        <span className="text-[10px] bg-[#222220] px-2 py-0.5 rounded text-[#d1d1cd]">Optimal</span>
-                        <span className="text-[10px] bg-[#222220] px-2 py-0.5 rounded text-[#d1d1cd]">Guaranteed</span>
+                      <div className="p-3.5 pt-0 flex flex-wrap gap-1.5 mt-2">
+                        <span className="text-[10px] bg-[#242422] text-[#d1d1cd] px-2 py-0.5 rounded-md font-medium">Optimal</span>
+                        <span className="text-[10px] bg-[#242422] text-[#d1d1cd] px-2 py-0.5 rounded-md font-medium">Shortest-path</span>
                       </div>
                     </div>
 
-                    {/* Model 2: D* Lite (Opus terracotta style) */}
+                    {/* Model 2: D* Lite (Claude Opus Coral) */}
                     <div
                       onClick={() => selectAlgorithm('dstarlite')}
-                      className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between ${
+                      className={`cursor-pointer rounded-xl border overflow-hidden transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 hover:shadow-xl ${
                         selectedAlgorithms.includes('dstarlite')
-                          ? 'bg-[#2d1e18] border-[#d97757] shadow-sm'
+                          ? 'bg-[#1b1b19] border-[#d97757] ring-1 ring-[#d97757]/60 shadow-lg'
                           : 'bg-[#1b1b19] border-[#262624] hover:border-[#383834]'
                       }`}
                     >
                       <div>
-                        <div className="w-full h-20 rounded-lg bg-[#d97757]/20 border border-[#d97757]/30 flex items-center justify-center mb-3">
-                          <Cpu size={28} className="text-[#d97757]" />
+                        {/* Top Coral Banner */}
+                        <div className="w-full h-24 bg-[#e07a5f] flex items-center justify-center relative overflow-hidden">
+                          <svg className="w-12 h-12 text-[#141413] transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <circle cx="20" cy="16" r="3" fill="#141413" />
+                            <circle cx="12" cy="28" r="3" fill="#141413" />
+                            <circle cx="28" cy="28" r="3" fill="#141413" />
+                            <line x1="20" y1="16" x2="12" y2="28" />
+                            <line x1="20" y1="16" x2="28" y2="28" />
+                            <path d="M26 22 L36 28 L30 31 L34 38 L30 40 L26 33 L22 36 Z" fill="#141413" />
+                          </svg>
+                          {selectedAlgorithms.includes('dstarlite') && (
+                            <span className="absolute top-2 right-2 text-[9px] font-bold bg-[#141413] text-[#d97757] px-1.5 py-0.5 rounded shadow">
+                              ACTIVE
+                            </span>
+                          )}
                         </div>
-                        <div className="font-semibold text-sm text-[#f4f4f0]">D* Lite Incremental</div>
-                        <p className="text-xs text-[#8e8e89] mt-1 line-clamp-2">
-                          Instant graph repairs when dynamic obstacles appear.
-                        </p>
+                        <div className="p-3.5 pb-2">
+                          <div className="flex items-center justify-between">
+                            <div className="font-semibold text-sm text-[#f4f4f0] group-hover:text-[#d97757] transition-colors">D* Lite</div>
+                            <span className="text-[10px] font-mono text-[#8e8e89]">O(Replanning)</span>
+                          </div>
+                          <div className="text-xs text-[#8e8e89] mt-0.5">Complex dynamic · Agents</div>
+                        </div>
                       </div>
-                      <div className="flex gap-1.5 mt-3 pt-2 border-t border-[#232321]">
-                        <span className="text-[10px] bg-[#222220] px-2 py-0.5 rounded text-[#d1d1cd]">Adaptive</span>
-                        <span className="text-[10px] bg-[#222220] px-2 py-0.5 rounded text-[#d1d1cd]">Dynamic</span>
+                      <div className="p-3.5 pt-0 flex flex-wrap gap-1.5 mt-2">
+                        <span className="text-[10px] bg-[#242422] text-[#d1d1cd] px-2 py-0.5 rounded-md font-medium">Adaptive</span>
+                        <span className="text-[10px] bg-[#242422] text-[#d1d1cd] px-2 py-0.5 rounded-md font-medium">Replanning</span>
                       </div>
                     </div>
 
-                    {/* Model 3: DWA Local (Sonnet cream/star style) */}
+                    {/* Model 3: DWA Local (Claude Sonnet Cream) */}
                     <div
                       onClick={() => selectAlgorithm('dwa')}
-                      className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between ${
+                      className={`cursor-pointer rounded-xl border overflow-hidden transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 hover:shadow-xl ${
                         selectedAlgorithms.includes('dwa')
-                          ? 'bg-[#262622] border-[#faf7f2] shadow-sm'
+                          ? 'bg-[#1b1b19] border-[#faf7f2] ring-1 ring-[#faf7f2]/60 shadow-lg'
                           : 'bg-[#1b1b19] border-[#262624] hover:border-[#383834]'
                       }`}
                     >
                       <div>
-                        <div className="w-full h-20 rounded-lg bg-[#faf7f2]/10 border border-[#faf7f2]/20 flex items-center justify-center mb-3">
-                          <Sparkles size={28} className="text-[#faf7f2]" />
+                        {/* Top Cream Banner */}
+                        <div className="w-full h-24 bg-[#f4efe6] flex items-center justify-center relative overflow-hidden">
+                          <svg className="w-12 h-12 text-[#141413] transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <line x1="24" y1="10" x2="24" y2="38" />
+                            <line x1="10" y1="24" x2="38" y2="24" />
+                            <line x1="14" y1="14" x2="34" y2="34" />
+                            <line x1="14" y1="34" x2="34" y2="14" />
+                            <circle cx="24" cy="24" r="5" fill="#141413" />
+                            <circle cx="24" cy="10" r="2.5" fill="#141413" />
+                            <circle cx="24" cy="38" r="2.5" fill="#141413" />
+                            <circle cx="10" cy="24" r="2.5" fill="#141413" />
+                            <circle cx="38" cy="24" r="2.5" fill="#141413" />
+                          </svg>
+                          {selectedAlgorithms.includes('dwa') && (
+                            <span className="absolute top-2 right-2 text-[9px] font-bold bg-[#141413] text-[#faf7f2] px-1.5 py-0.5 rounded shadow">
+                              ACTIVE
+                            </span>
+                          )}
                         </div>
-                        <div className="font-semibold text-sm text-[#f4f4f0]">Dynamic Window (DWA)</div>
-                        <p className="text-xs text-[#8e8e89] mt-1 line-clamp-2">
-                          Kinematic obstacle avoidance adhering to acceleration limits.
-                        </p>
+                        <div className="p-3.5 pb-2">
+                          <div className="flex items-center justify-between">
+                            <div className="font-semibold text-sm text-[#f4f4f0] group-hover:text-[#faf7f2] transition-colors">DWA Local</div>
+                            <span className="text-[10px] font-mono text-[#8e8e89]">O(V_s × V_w)</span>
+                          </div>
+                          <div className="text-xs text-[#8e8e89] mt-0.5">Everyday tasks · Obstacles</div>
+                        </div>
                       </div>
-                      <div className="flex gap-1.5 mt-3 pt-2 border-t border-[#232321]">
-                        <span className="text-[10px] bg-[#222220] px-2 py-0.5 rounded text-[#d1d1cd]">Reactive</span>
-                        <span className="text-[10px] bg-[#222220] px-2 py-0.5 rounded text-[#d1d1cd]">Safety</span>
+                      <div className="p-3.5 pt-0 flex flex-wrap gap-1.5 mt-2">
+                        <span className="text-[10px] bg-[#242422] text-[#d1d1cd] px-2 py-0.5 rounded-md font-medium">Kinematic</span>
+                        <span className="text-[10px] bg-[#242422] text-[#d1d1cd] px-2 py-0.5 rounded-md font-medium">Safe</span>
                       </div>
                     </div>
 
-                    {/* Model 4: Boustrophedon (Haiku sage style) */}
+                    {/* Model 4: Boustrophedon (Claude Haiku Sage) */}
                     <div
                       onClick={() => selectAlgorithm('boustrophedon')}
-                      className={`cursor-pointer rounded-xl border p-4 transition-all flex flex-col justify-between ${
+                      className={`cursor-pointer rounded-xl border overflow-hidden transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 hover:shadow-xl ${
                         selectedAlgorithms.includes('boustrophedon')
-                          ? 'bg-[#192522] border-[#a7c4bc] shadow-sm'
+                          ? 'bg-[#1b1b19] border-[#a7c4bc] ring-1 ring-[#a7c4bc]/60 shadow-lg'
                           : 'bg-[#1b1b19] border-[#262624] hover:border-[#383834]'
                       }`}
                     >
                       <div>
-                        <div className="w-full h-20 rounded-lg bg-[#a7c4bc]/20 border border-[#a7c4bc]/30 flex items-center justify-center mb-3">
-                          <Layers size={28} className="text-[#a7c4bc]" />
+                        {/* Top Sage Banner with New Badge */}
+                        <div className="w-full h-24 bg-[#b4d2c8] flex items-center justify-center relative overflow-hidden">
+                          <svg className="w-12 h-12 text-[#141413] transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M12 28 L24 14 L36 28 L24 22 Z" fill="#141413" fillOpacity="0.2" />
+                            <path d="M12 28 L24 14 L36 28 L24 38 Z" stroke="#141413" />
+                            <line x1="24" y1="14" x2="24" y2="38" />
+                          </svg>
+                          <span className="absolute top-2 right-2 text-[9px] font-bold bg-[#141413] text-[#b4d2c8] px-1.5 py-0.5 rounded shadow">
+                            {selectedAlgorithms.includes('boustrophedon') ? 'ACTIVE' : 'PBL'}
+                          </span>
                         </div>
-                        <div className="font-semibold text-sm text-[#f4f4f0]">Boustrophedon Sweep</div>
-                        <p className="text-xs text-[#8e8e89] mt-1 line-clamp-2">
-                          Cellular decomposition for guaranteed 95%+ coverage.
-                        </p>
+                        <div className="p-3.5 pb-2">
+                          <div className="flex items-center justify-between">
+                            <div className="font-semibold text-sm text-[#f4f4f0] group-hover:text-[#a7c4bc] transition-colors">Boustrophedon</div>
+                            <span className="text-[10px] font-mono text-[#8e8e89]">O(Coverage)</span>
+                          </div>
+                          <div className="text-xs text-[#8e8e89] mt-0.5">Fastest sweep · Complete</div>
+                        </div>
                       </div>
-                      <div className="flex gap-1.5 mt-3 pt-2 border-t border-[#232321]">
-                        <span className="text-[10px] bg-[#222220] px-2 py-0.5 rounded text-[#d1d1cd]">Complete</span>
-                        <span className="text-[10px] bg-[#222220] px-2 py-0.5 rounded text-[#d1d1cd]">PBL Best</span>
+                      <div className="p-3.5 pt-0 flex flex-wrap gap-1.5 mt-2">
+                        <span className="text-[10px] bg-[#242422] text-[#d1d1cd] px-2 py-0.5 rounded-md font-medium">95%+ Area</span>
+                        <span className="text-[10px] bg-[#242422] text-[#d1d1cd] px-2 py-0.5 rounded-md font-medium">Cellular</span>
                       </div>
                     </div>
                   </div>
