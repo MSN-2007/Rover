@@ -8,10 +8,12 @@ An interactive robotics simulation, algorithm comparison, and evaluation laborat
 
 ### 1. Autonomous Vacuum Rover Simulation
 - **Realistic Rover Mechanics**: Differential-drive chassis with dual motorized tread wheels, active rotating front sweeper brushes, center roller vacuum intake, and a rotating 360° LiDAR turret.
-- **Dynamic Floor Cleaning**: Granular dust specks and dirt regions that are actively absorbed as the rover passes over them.
+- **Dynamic Particle Suction**: Dynamic dust particles ahead of the rover are actively drawn toward the underbody intake slot with animated vortex airflow and rear exhaust.
+- **Home Base Docking Station**: Authentic charging dock baseplate with metallic brass contacts and status LED indicator.
 - **Real-Time Telemetry**: Tracks coordinate poses $(x, y)$, heading angle $\theta$, linear velocity $v$, angular velocity $\omega$, battery discharge curves (14.4V Li-ion model), and cleaning suction modes (*Eco*, *Standard*, *Boost*).
 
-### 2. Interactive Canvas Tools
+### 2. Interactive Canvas Tools & Room Presets
+- **Quick Room Presets**: 1-click room layout switching directly from the dashboard: *Living Room*, *Multi-Room Apartment*, *Hallways*, and *Random Obstacles*.
 - **Pan & Zoom**: Smooth navigation with zoom levels up to 4.5x.
 - **Set Goal**: Reposition target coordinates interactively.
 - **Place Rover**: Relocate the robot anywhere on the floor plan.
@@ -33,16 +35,23 @@ An interactive robotics simulation, algorithm comparison, and evaluation laborat
   - Spanning Tree Coverage (STC)
   - Parallel Grid Sweep
 
-### 4. Side-by-Side Benchmarking Engine
+### 4. Anthropic Claude Console Model Cards Showcase
+- **Curated 4-Model Showcase**:
+  - **A\* Search**: Claude Blue `#60a5fa` banner with search graph vector art ($O(V \log V)$).
+  - **D\* Lite**: Claude Terracotta `#d97757` banner with dynamic graph repair ($O(\text{Replanning})$).
+  - **DWA Local**: Claude Sonnet Cream `#f4efe6` banner with kinematic velocity windows ($O(V_s \times V_w)$).
+  - **Boustrophedon**: Claude Haiku Sage `#b4d2c8` banner with cellular decomposition ($O(\text{Coverage})$).
+- **Interactive Controls**: Micro-lift on hover, active selection indicators, and instant 1-click model switching.
+
+### 5. Side-by-Side Benchmarking Engine
 - Run multi-algorithm comparisons under identical environmental seeds and constraints.
 - Real-time trade-off radar charts and comparative performance bar charts.
 - Metric tracking: Compute planning time (ms), total path length (m), nodes explored, collision count, and composite suitability score.
 - **Export PBL Report**: Copy formatted Markdown / JSON evaluation summaries directly into project documentation.
 
-### 5. Claude Console UI
-- Warm graphite minimalist aesthetic inspired by the Anthropic Claude Console interface.
+### 6. Academic Workbench Design
+- Minimalist developer console styling with zero login/auth barrier for instant academic evaluation.
 - Smooth slide-in / slide-out collapsible sidebar and telemetry inspector drawer.
-- High-contrast telemetry cards, serif headings, and clean control surfaces.
 
 ---
 
