@@ -1,87 +1,246 @@
 # Smart Vacuum Algorithm Lab (Rover)
 
-An interactive robotics simulation, algorithm comparison, and evaluation laboratory for autonomous domestic vacuum cleaner agents. Developed as an engineering platform for the PBL project: **“Smart Vacuum Cleaner Agent for Intelligent Room Cleaning”**.
+An interactive robotics simulation, algorithm comparison, and benchmarking laboratory for autonomous domestic vacuum cleaner agents. Developed as an engineering platform for the PBL project: **“Smart Vacuum Cleaner Agent for Intelligent Room Cleaning”**.
+
+[![Next.js](https://img.shields.io/badge/Next.js-16.4-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.3-blue?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
 ## 🌟 Key Features
 
 ### 1. Autonomous Vacuum Rover Simulation
-- **Realistic Rover Mechanics**: Differential-drive chassis with dual motorized tread wheels, active rotating front sweeper brushes, center roller vacuum intake, and a rotating 360° LiDAR turret.
-- **Dynamic Particle Suction**: Dynamic dust particles ahead of the rover are actively drawn toward the underbody intake slot with animated vortex airflow and rear exhaust.
-- **Home Base Docking Station**: Authentic charging dock baseplate with metallic brass contacts and status LED indicator.
-- **Real-Time Telemetry**: Tracks coordinate poses $(x, y)$, heading angle $\theta$, linear velocity $v$, angular velocity $\omega$, battery discharge curves (14.4V Li-ion model), and cleaning suction modes (*Eco*, *Standard*, *Boost*).
+- **Differential-Drive Kinematics**: Realistic two-wheeled chassis with continuous heading angle integration, velocity clamping, and wheel slip simulation.
+- **Physical Rover Rendering**:
+  - Motorized high-traction rubber drive tracks/treads.
+  - Dual counter-rotating front sweeper brushes.
+  - High-velocity center roller suction intake.
+  - 360° rotating LiDAR turret raycasting 36 scanner beams in real time.
+- **Dynamic Suction Physics**:
+  - Particle vortex that pulls nearby floor dust into the intake aperture.
+  - Airflow exhaust trail behind the chassis.
+  - Real-time dust weight collection tracking ($g$) with multi-tiered suction profiles: **Eco** (1200 Pa), **Standard** (2000 Pa), and **Boost** (3000 Pa).
+- **Physical Charging Home Dock**: Authentic wall-mounted charging station with metallic brass spring contacts, status LED, and soft drop shadow.
 
-### 2. Interactive Canvas Tools & Room Presets
-- **Quick Room Presets**: 1-click room layout switching directly from the dashboard: *Living Room*, *Multi-Room Apartment*, *Hallways*, and *Random Obstacles*.
-- **Pan & Zoom**: Smooth navigation with zoom levels up to 4.5x.
-- **Set Goal**: Reposition target coordinates interactively.
-- **Place Rover**: Relocate the robot anywhere on the floor plan.
-- **Add Walls & Obstacles**: Paint custom obstacles and narrow bottlenecks.
-- **Spray Dust**: Dynamically add dirt patches to test adaptive cleaning.
-- **Eraser**: Clear custom walls and dust regions on the fly.
+### 2. Obstacle Avoidance & Anti-Stuck System
+- **Obstacle Inflation Costmap**: Automatically inflates walls and furniture obstacles by $0.28\text{ m}$ (robot radius $0.25\text{ m} + 0.03\text{ m}$ safety margin) to prevent path planners from clipping table legs and tight corners.
+- **Enhanced Dynamic Window Approach (DWA)**: Persistent velocity window modeling with 192 trajectory samples, zero-speed escape rotation, and clearance scoring.
+- **Autonomous Stuck Recovery**: Automatic stuck detection (triggers if position displacement is $< 0.06\text{ m}$ over 2 seconds) that initiates a multi-phase escape maneuver (reverse displacement $\to$ in-place rotation toward goal).
 
 ### 3. Comprehensive Robotics Algorithm Suite
 - **Global Path Planning**:
-  - $A^*$ Search (Euclidean & Octile heuristic-guided optimal search)
-  - Dijkstra’s Algorithm (Uniform-cost baseline)
-  - $D^*$ Lite (Incremental replanning for dynamic changes)
-  - RRT & RRT* (Sampling-based exploration)
+  - **A\* Search**: Optimal shortest-path search with Euclidean and Octile heuristic cost functions ($O(V \log V)$).
+  - **Dijkstra’s Algorithm**: Guaranteed uniform-cost baseline search without heuristic bias.
+  - **D\* Lite**: Incremental heuristic replanner tailored for unknown or dynamic floor maps.
+  - **RRT / RRT\***: Rapidly-exploring Random Tree with asymptotic optimality rewiring for complex geometry.
 - **Local Obstacle Avoidance**:
-  - Dynamic Window Approach (DWA) (Kinematically feasible trajectory search)
-  - Vector Field Histogram (VFH) (Obstacle density grid mapping)
-- **Complete Area Coverage Planning**:
-  - Boustrophedon Cellular Decomposition (Lawnmower sweep pattern)
-  - Spanning Tree Coverage (STC)
-  - Parallel Grid Sweep
+  - **Dynamic Window Approach (DWA)**: Kinematically constrained velocity sampling in acceleration-limited space.
+  - **Vector Field Histogram (VFH)**: Polar obstacle density histogram for smooth avoidance around moving entities.
+- **Area Coverage Planning**:
+  - **Boustrophedon Cellular Decomposition**: Structured back-and-forth lawnmower sweep pattern.
+  - **Spanning Tree Coverage (STC)**: Hamiltonian cycle on a coarse grid decomposition.
 
-### 4. Anthropic Claude Console Model Cards Showcase
-- **Curated 4-Model Showcase**:
-  - **A\* Search**: Claude Blue `#60a5fa` banner with search graph vector art ($O(V \log V)$).
-  - **D\* Lite**: Claude Terracotta `#d97757` banner with dynamic graph repair ($O(\text{Replanning})$).
-  - **DWA Local**: Claude Sonnet Cream `#f4efe6` banner with kinematic velocity windows ($O(V_s \times V_w)$).
-  - **Boustrophedon**: Claude Haiku Sage `#b4d2c8` banner with cellular decomposition ($O(\text{Coverage})$).
-- **Interactive Controls**: Micro-lift on hover, active selection indicators, and instant 1-click model switching.
-
-### 5. Side-by-Side Benchmarking Engine
-- Run multi-algorithm comparisons under identical environmental seeds and constraints.
-- Real-time trade-off radar charts and comparative performance bar charts.
-- Metric tracking: Compute planning time (ms), total path length (m), nodes explored, collision count, and composite suitability score.
-- **Export PBL Report**: Copy formatted Markdown / JSON evaluation summaries directly into project documentation.
-
-### 6. Academic Workbench Design
-- Minimalist developer console styling with zero login/auth barrier for instant academic evaluation.
-- Smooth slide-in / slide-out collapsible sidebar and telemetry inspector drawer.
+### 4. Anthropic Claude Console Design & Model Cards
+- **Claude Console Aesthetic**: Warm charcoal dark palette (`#141413`), border strokes (`#2b2a27`), pill selectors, and serif headers.
+- **Interactive Model Cards Showcase**:
+  - **A\* Search**: Claude Blue (`#60a5fa`) with graph search topology.
+  - **D\* Lite**: Claude Terracotta (`#d97757`) with dynamic graph repair.
+  - **DWA Local**: Claude Sonnet Cream (`#f4efe6`) with kinematic trajectory arcs.
+  - **Boustrophedon**: Claude Haiku Sage (`#b4d2c8`) with cellular decomposition sweeps.
+- **Collapsible Workbench**: Sliding left sidebar and floating telemetry telemetry drawer.
 
 ---
 
-## 🚀 Getting Started
+## 💻 Operating System Installation & Setup Guides
 
-### Prerequisites
-- Node.js (v18.0.0 or higher)
-- npm or pnpm / yarn
+### 🐧 Linux (Ubuntu, Debian, Fedora, Arch, WSL2)
 
-### Installation
+#### 1. System Requirements & Node.js Installation
+Ensure Node.js 18+ and Git are installed:
 
+```bash
+# Ubuntu / Debian / WSL2
+sudo apt update && sudo apt install -y git curl
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Fedora
+sudo dnf install -y git nodejs
+
+# Arch Linux
+sudo pacman -S git nodejs npm
+```
+
+Verify installation:
+```bash
+node -v   # Should be >= v18.0.0 (v20+ recommended)
+npm -v    # Should be >= 9.0.0
+```
+
+#### 2. Clone and Install
 ```bash
 git clone https://github.com/MSN-2007/Rover.git
 cd Rover
 npm install
 ```
 
-### Running Locally
-
+#### 3. Run Development Server
 ```bash
 npm run dev
 ```
+Open **`http://localhost:3000`** in Firefox or Chromium.
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-To run on a custom port (e.g., port 2000):
-
+To run on a specific port:
 ```bash
-npm run dev -- -p 2000
+npm run dev -- --port 2000
 ```
+
+#### 4. Production Build
+```bash
+npm run build
+npm run start
+```
+
+---
+
+### 🪟 Windows (Windows 10 / 11, PowerShell, CMD)
+
+#### 1. System Requirements & Node.js Installation
+- Download and run the official **Node.js LTS Installer (v20 or v22)** from [nodejs.org](https://nodejs.org/).
+- Ensure **"Add to PATH"** is checked during setup.
+- Install [Git for Windows](https://git-scm.com/download/win).
+
+Verify installation in **PowerShell** or **Windows Terminal**:
+```powershell
+node -v
+npm -v
+git --version
+```
+
+#### 2. Clone and Install
+```powershell
+git clone https://github.com/MSN-2007/Rover.git
+cd Rover
+npm install
+```
+
+#### 3. Run Development Server
+```powershell
+npm run dev
+```
+Open **`http://localhost:3000`** in Chrome, Edge, or Firefox.
+
+To run on a custom port (e.g. port 2000):
+```powershell
+npm run dev -- --port 2000
+```
+
+#### 4. Production Build
+```powershell
+npm run build
+npm run start
+```
+
+> **Windows Tip**: If PowerShell displays an execution policy error when running scripts, execute:
+> ```powershell
+> Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+> ```
+
+---
+
+### 🍎 macOS (Apple Silicon M1/M2/M3/M4 & Intel)
+
+#### 1. System Requirements & Node.js Installation
+Using [Homebrew](https://brew.sh/):
+```zsh
+# Install Node.js and Git
+brew install node git
+```
+
+Or using `nvm` (Node Version Manager):
+```zsh
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.zshrc
+nvm install 20
+nvm use 20
+```
+
+Verify installation:
+```zsh
+node -v
+npm -v
+```
+
+#### 2. Clone and Install
+```zsh
+git clone https://github.com/MSN-2007/Rover.git
+cd Rover
+npm install
+```
+
+#### 3. Run Development Server
+```zsh
+npm run dev
+```
+Open **`http://localhost:3000`** in Safari or Chrome.
+
+To run on a custom port:
+```zsh
+npm run dev -- --port 2000
+```
+
+#### 4. Production Build
+```zsh
+npm run build
+npm run start
+```
+
+---
+
+## 🛠️ Alternative Package Managers
+
+You can also run the project with your preferred package manager on any OS:
+
+| Package Manager | Install Dependencies | Start Dev Server | Build Production |
+|---|---|---|---|
+| **npm** | `npm install` | `npm run dev` | `npm run build` |
+| **pnpm** | `pnpm install` | `pnpm dev` | `pnpm build` |
+| **yarn** | `yarn install` | `yarn dev` | `yarn build` |
+| **bun** | `bun install` | `bun dev` | `bun build` |
+
+---
+
+## 🔍 Troubleshooting & Common Issues
+
+### Port 3000 Already in Use
+If port 3000 is occupied by another process:
+
+- **Linux / macOS**:
+  ```bash
+  # Check which process is using port 3000
+  lsof -i :3000
+  # Kill the process
+  kill -9 $(lsof -t -i :3000)
+  # Or run on another port
+  npm run dev -- --port 3001
+  ```
+
+- **Windows (PowerShell)**:
+  ```powershell
+  # Find PID on port 3000
+  netstat -ano | findstr :3000
+  # Stop process by PID (e.g., 1234)
+  Stop-Process -Id 1234 -Force
+  # Or run on another port
+  npm run dev -- --port 3001
+  ```
+
+### Outdated Node Version
+If you encounter `TypeError` or compilation issues during `npm run build`:
+Ensure `node -v` outputs `v18.0.0` or higher. Node v20 LTS is recommended.
 
 ---
 
@@ -94,19 +253,21 @@ smart-vacuum-lab/
 │   │   ├── planning/        # A*, Dijkstra, D* Lite, RRT, RRT*
 │   │   ├── navigation/      # Dynamic Window Approach (DWA), VFH
 │   │   ├── coverage/        # Boustrophedon, STC, Lawnmower
-│   │   └── interfaces.ts    # Uniform algorithm interfaces
+│   │   └── interfaces.ts    # Algorithm interfaces & typing
 │   ├── components/
-│   │   ├── layout/          # MainApp layout with collapsible slide-in/out sidebar
-│   │   ├── simulation/      # SimulationCanvas (Rover rendering) & ExperimentControls
+│   │   ├── layout/          # MainApp layout with slide-in/out navigation
+│   │   ├── simulation/      # SimulationCanvas (Rover rendering) & controls
 │   │   ├── metrics/         # MetricsPanel & ComparisonPanel benchmarking engine
-│   │   └── algorithms/      # AlgorithmInfoPanel (research notes & math)
+│   │   └── algorithms/      # AlgorithmInfoPanel (algorithm cards & math notes)
 │   ├── simulation/
-│   │   ├── core/            # Grid, physics, RNG, vector utilities
-│   │   ├── environment/     # Procedural room layouts (Apartment, Studio, Corridor, Random)
+│   │   ├── core/            # Grid models, physics, RNG, vector utilities
+│   │   ├── environment/     # Procedural room generators & obstacle inflation
 │   │   └── robot/           # Differential drive kinematics & LiDAR raycasting
 │   ├── store/
 │   │   └── simulationStore.ts  # Zustand global state manager
 │   └── app/                 # Next.js App Router root layout & globals.css
+├── public/                  # Static assets
+└── package.json             # Scripts & dependencies
 ```
 
 ---
@@ -114,3 +275,4 @@ smart-vacuum-lab/
 ## 📄 License
 
 Academic PBL Project — Developed for research and simulation of autonomous domestic cleaning robots.
+Licensed under the [MIT License](LICENSE).
