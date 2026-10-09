@@ -57,6 +57,39 @@ export function markObstaclesOnGrid(grid: Grid, obstacles: Obstacle[], resolutio
   }
 }
 
+/**
+ * Inflate obstacles on the grid by robot radius so that path planners
+ * (A*, Dijkstra, etc.) never route the robot through narrow passages
+ * that would cause it to physically collide with obstacles.
+ * 
+ * @param grid - The occupancy grid to inflate in-place
+ * @param robotRadius - Physical radius of the robot in world units (meters)
+ */
+export function inflateObstacles(grid: Grid, robotRadius: number): void {
+  const inflateRadius = Math.ceil(robotRadius / grid.resolution); // cells to inflate
+  const original = grid.cells.map(row => row.map(cell => cell.occupied));
+
+  for (let y = 0; y < grid.height; y++) {
+    for (let x = 0; x < grid.width; x++) {
+      if (original[y][x]) {
+        // Inflate in a circle of inflateRadius cells
+        for (let dy = -inflateRadius; dy <= inflateRadius; dy++) {
+          for (let dx = -inflateRadius; dx <= inflateRadius; dx++) {
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist <= inflateRadius) {
+              const nx = x + dx;
+              const ny = y + dy;
+              if (isValidCell(nx, ny, grid)) {
+                grid.cells[ny][nx].occupied = true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 export function generateEnvironment(config: SimulationConfig): Environment {
   const rng = createRNG(config.randomSeed);
 
@@ -113,9 +146,11 @@ export function generateEnvironment(config: SimulationConfig): Environment {
     });
   }
 
-  // Mark obstacles on grid
+  // Mark obstacles on grid, then inflate by robot radius for safe path planning
   markObstaclesOnGrid(grid, walls, config.gridResolution);
   markObstaclesOnGrid(grid, furniture, config.gridResolution);
+  // Robot radius is 0.25m — inflate so A* stays clear of obstacles
+  inflateObstacles(grid, 0.28);
 
   // Apply dirt to grid cells
   for (const dr of dirtRegions) {

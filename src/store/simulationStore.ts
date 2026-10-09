@@ -98,6 +98,10 @@ interface SimState {
   suctionMode: SuctionMode;
   brushRotating: boolean;
   inspectCell: { gx: number; gy: number; occupied: boolean; dirt: number; cost: number } | null;
+  // Stuck detection
+  _stuckTimer: number;
+  _lastCheckPose: { x: number; y: number } | null;
+  _recoveryMode: number; // 0=none, >0=recovery frames remaining
 
   // Actions
   setConfig: (config: Partial<SimulationConfig>) => void;
@@ -180,6 +184,9 @@ export const useSimulationStore = create<SimState>((set, get) => ({
   suctionMode: 'standard',
   brushRotating: false,
   inspectCell: null,
+  _stuckTimer: 0,
+  _lastCheckPose: null,
+  _recoveryMode: 0,
 
   setConfig: (config) => set(s => ({ config: { ...s.config, ...config } })),
   setMode: (mode) => set({ mode }),
@@ -470,6 +477,9 @@ export const useSimulationStore = create<SimState>((set, get) => ({
       },
       isRunning: false,
       isPaused: false,
+      _stuckTimer: 0,
+      _lastCheckPose: null,
+      _recoveryMode: 0,
     });
   },
 
@@ -501,21 +511,59 @@ export const useSimulationStore = create<SimState>((set, get) => ({
     const waypoints = mode === 'coverage' ? coverageWaypoints : plannedPath;
     const target = waypoints[newWaypointIndex];
 
+    // --- Stuck Detection ---
+    const { _stuckTimer, _lastCheckPose, _recoveryMode } = get();
+    let newStuckTimer = _stuckTimer + adjDt;
+    let newRecoveryMode = Math.max(0, _recoveryMode - 1);
+    let lastCheckPose = _lastCheckPose;
+
+    // Check every 2 seconds if robot has moved enough
+    const STUCK_CHECK_INTERVAL = 2.0;
+    const STUCK_DISTANCE_THRESHOLD = 0.06;
+    if (newStuckTimer >= STUCK_CHECK_INTERVAL && lastCheckPose) {
+      const movedDist = Math.sqrt(
+        (robot.pose.x - lastCheckPose.x) ** 2 +
+        (robot.pose.y - lastCheckPose.y) ** 2
+      );
+      if (movedDist < STUCK_DISTANCE_THRESHOLD) {
+        newRecoveryMode = 30; // ~3 seconds of recovery at 10fps
+      }
+      newStuckTimer = 0;
+      lastCheckPose = { x: robot.pose.x, y: robot.pose.y };
+    } else if (!lastCheckPose) {
+      lastCheckPose = { x: robot.pose.x, y: robot.pose.y };
+    }
+
     if (target) {
       const distToTarget = distance2(robot.pose, target);
 
-      if (distToTarget < 0.35) {
+      if (distToTarget < 0.4) {
         newWaypointIndex = Math.min(newWaypointIndex + 1, waypoints.length - 1);
       }
 
-      if (newWaypointIndex >= waypoints.length - 1 && distToTarget < 0.3) {
+      if (newWaypointIndex >= waypoints.length - 1 && distToTarget < 0.4) {
         status = 'task_completed';
       }
 
       if (status !== 'task_completed') {
         const currentTarget = waypoints[newWaypointIndex];
         if (currentTarget) {
-          if (['dwa', 'vfh'].includes(algId) || mode === 'local_navigation' || mode === 'dynamic_obstacles') {
+          // Recovery mode: back up and spin toward goal to escape stuck state
+          if (newRecoveryMode > 0) {
+            const goalAngle = Math.atan2(
+              config.goalPosition.y - robot.pose.y,
+              config.goalPosition.x - robot.pose.x
+            );
+            const angleError = normalizeAngle(goalAngle - robot.pose.theta);
+            // Phase 1 (frames 21-30): back up; Phase 2 (frames 1-20): spin to goal
+            if (newRecoveryMode > 20) {
+              cmdLinear = -config.maxLinearVelocity * 0.4;
+              cmdAngular = 0;
+            } else {
+              cmdLinear = 0;
+              cmdAngular = angleError > 0 ? config.maxAngularVelocity : -config.maxAngularVelocity;
+            }
+          } else if (['dwa', 'vfh'].includes(algId) || mode === 'local_navigation' || mode === 'dynamic_obstacles') {
             const plannerConfig: LocalPlannerConfig = {
               maxLinearVel: config.maxLinearVelocity,
               maxAngularVel: config.maxAngularVelocity,
@@ -534,11 +582,11 @@ export const useSimulationStore = create<SimState>((set, get) => ({
             candidateTrajectories = result.candidateTrajectories.map(c => ({ trajectory: c.trajectory, score: c.score, collides: c.collides }));
             selectedTrajectory = result.selectedTrajectory;
           } else {
-            // Pure pursuit / PID waypoint steering
+            // Pure pursuit / PID waypoint steering (improved)
             const angleToTarget = Math.atan2(currentTarget.y - robot.pose.y, currentTarget.x - robot.pose.x);
             const angleError = normalizeAngle(angleToTarget - robot.pose.theta);
-            cmdAngular = Math.max(-config.maxAngularVelocity, Math.min(config.maxAngularVelocity, angleError * 3.2));
-            cmdLinear = Math.abs(angleError) < 0.4 ? config.maxLinearVelocity * 0.85 : config.maxLinearVelocity * 0.25;
+            cmdAngular = Math.max(-config.maxAngularVelocity, Math.min(config.maxAngularVelocity, angleError * 4.5));
+            cmdLinear = Math.abs(angleError) < 0.3 ? config.maxLinearVelocity * 0.9 : config.maxLinearVelocity * 0.3;
           }
         }
       }
@@ -611,6 +659,9 @@ export const useSimulationStore = create<SimState>((set, get) => ({
         batteryLevel: newBattery,
         dirtCollectedGrams: newDirtCollected,
         brushRotating: Math.abs(cmdLinear) > 0.01 || Math.abs(cmdAngular) > 0.05,
+        _stuckTimer: newStuckTimer,
+        _lastCheckPose: lastCheckPose,
+        _recoveryMode: newRecoveryMode,
         robotState: {
           pose: { ...robot.pose },
           linearVelocity: robot.linearVelocity,

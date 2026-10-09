@@ -9,52 +9,86 @@ export class DWAPlanner implements LocalPlanner {
   readonly name = 'Dynamic Window Approach (DWA)';
 
   private config!: LocalPlannerConfig;
+  // Track current velocities across calls for proper dynamic windowing
+  private curV = 0;
+  private curW = 0;
 
   initialize(config: LocalPlannerConfig): void {
     this.config = config;
+    this.curV = 0;
+    this.curW = 0;
   }
 
   compute(pose: Pose, goal: Vec2, env: Environment): LocalPlannerResult {
     const { maxLinearVel, maxAngularVel, maxAccelLinear, maxAccelAngular, dt, horizonTime, robotRadius } = this.config;
 
-    // Current velocities (simplified - assume 0 for now; full impl would take prev vel)
-    const curV = 0, curW = 0;
+    // Dynamic window based on current velocity + reachable velocities
+    const vMin = Math.max(0, this.curV - maxAccelLinear * dt * 3);
+    const vMax = Math.min(maxLinearVel, this.curV + maxAccelLinear * dt * 3);
+    const wMin = Math.max(-maxAngularVel, this.curW - maxAccelAngular * dt * 3);
+    const wMax = Math.min(maxAngularVel, this.curW + maxAccelAngular * dt * 3);
 
-    // Dynamic window
-    const vMin = Math.max(-maxLinearVel, curV - maxAccelLinear * dt);
-    const vMax = Math.min(maxLinearVel, curV + maxAccelLinear * dt);
-    const wMin = Math.max(-maxAngularVel, curW - maxAccelAngular * dt);
-    const wMax = Math.min(maxAngularVel, curW + maxAccelAngular * dt);
-
-    const vSamples = 8, wSamples = 12;
+    // More samples for better trajectory coverage
+    const vSamples = 12, wSamples = 16;
     const candidates: TrajectoryCandidate[] = [];
 
-    for (let vi = 0; vi <= vSamples; vi++) {
+    // Also always include a zero-v pure rotation set to escape tight spots
+    const allVSamples = vSamples + 1; // +1 for v=0 escape
+
+    for (let vi = 0; vi <= allVSamples; vi++) {
       for (let wi = 0; wi <= wSamples; wi++) {
-        const v = vMin + (vi / vSamples) * (vMax - vMin);
+        const v = vi === allVSamples ? 0 : vMin + (vi / vSamples) * (vMax - vMin);
         const w = wMin + (wi / wSamples) * (wMax - wMin);
 
         // Simulate trajectory
         const trajectory = this.simulateTrajectory(pose, v, w, horizonTime, dt);
         const collides = this.checkTrajectoryCollision(trajectory, robotRadius, env);
 
-        // Score
-        const headingScore = this.headingScore(trajectory[trajectory.length - 1] ?? pose, goal);
-        const distScore = 1 / (1 + distance2(trajectory[trajectory.length - 1] ?? pose, goal));
+        // Score trajectory
+        const endPose = trajectory[trajectory.length - 1] ?? pose;
+        const headingScore = this.headingScore(endPose, goal);
+        const distScore = 1 / (1 + distance2(endPose, goal));
         const velocityScore = v / maxLinearVel;
         const clearanceScore = collides ? 0 : this.clearanceScore(trajectory, robotRadius, env);
+        // Penalize trajectories going away from goal
+        const goalHeadingNow = this.headingScore(pose, goal);
+        const goalImprovement = headingScore - goalHeadingNow * 0.5;
 
-        const score = collides ? -1 : headingScore * 0.4 + distScore * 0.3 + velocityScore * 0.1 + clearanceScore * 0.2;
+        const score = collides
+          ? -1
+          : headingScore * 0.45 + distScore * 0.25 + velocityScore * 0.1 + clearanceScore * 0.2;
 
         candidates.push({ v, w, trajectory: trajectory.map(p => ({ x: p.x, y: p.y })), score, collides });
       }
     }
 
-    // Select best
-    let best = candidates[0];
+    // Select best non-colliding trajectory
+    let best = candidates.find(c => !c.collides) ?? candidates[0];
     for (const c of candidates) {
       if (c.score > best.score) best = c;
     }
+
+    // If ALL trajectories collide, rotate in place to escape (recovery behavior)
+    const allCollide = candidates.every(c => c.collides);
+    if (allCollide) {
+      // Turn toward goal with max angular velocity
+      const goalAngle = Math.atan2(goal.y - pose.y, goal.x - pose.x);
+      const angleError = normalizeAngle(goalAngle - pose.theta);
+      const escapeW = angleError >= 0 ? maxAngularVel * 0.8 : -maxAngularVel * 0.8;
+      const escapeTraj = this.simulateTrajectory(pose, 0, escapeW, horizonTime, dt);
+      this.curV = 0;
+      this.curW = escapeW;
+      return {
+        cmdLinear: 0,
+        cmdAngular: escapeW,
+        candidateTrajectories: candidates,
+        selectedTrajectory: escapeTraj.map(p => ({ x: p.x, y: p.y })),
+      };
+    }
+
+    // Store velocities for next call
+    this.curV = best.v;
+    this.curW = best.w;
 
     return {
       cmdLinear: best.v,
@@ -77,8 +111,10 @@ export class DWAPlanner implements LocalPlanner {
   }
 
   private checkTrajectoryCollision(traj: Pose[], radius: number, env: Environment): boolean {
+    // Use a slightly larger radius for trajectory checking (safety margin)
+    const safeRadius = radius * 1.15;
     for (const p of traj) {
-      if (checkCollision(p.x, p.y, radius, env)) return true;
+      if (checkCollision(p.x, p.y, safeRadius, env)) return true;
     }
     return false;
   }
@@ -100,10 +136,13 @@ export class DWAPlanner implements LocalPlanner {
         minDist = Math.min(minDist, d);
       }
     }
-    return Math.min(1, Math.max(0, minDist / 2));
+    return Math.min(1, Math.max(0, minDist / 1.5));
   }
 
-  reset(): void {}
+  reset(): void {
+    this.curV = 0;
+    this.curW = 0;
+  }
 }
 
 // Vector Field Histogram - Borenstein & Koren 1991
