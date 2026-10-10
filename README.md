@@ -6,29 +6,42 @@ An interactive robotics simulation, algorithm comparison, and benchmarking labor
 [![React](https://img.shields.io/badge/React-19.3-blue?logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
+[![Specification: ROBOT.md](https://img.shields.io/badge/Spec-ROBOT.md-d97757.svg)](ROBOT.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+---
+
+## 📖 Quick Links & Documentation
+
+- [ROBOT.md](ROBOT.md) — Comprehensive technical specification, kinematic equations, sensor models, and LLM context index.
+- [Algorithm Suite](#3-comprehensive-robotics-algorithm-suite) — Directory of all path planning, local avoidance, coverage, and localization algorithms.
+- [Cross-Platform Setup Guides](#-operating-system-installation--setup-guides) — Step-by-step installation for Linux, Windows, and macOS.
+- [Project Architecture](#%EF%B8%8F-project-architecture) — Codebase structure and module breakdown.
 
 ---
 
 ## 🌟 Key Features
 
 ### 1. Autonomous Vacuum Rover Simulation
-- **Differential-Drive Kinematics**: Realistic two-wheeled chassis with continuous heading angle integration, velocity clamping, and wheel slip simulation.
-- **Physical Rover Rendering**:
+- **Differential-Drive Kinematics**: Realistic two-wheeled chassis with continuous heading angle integration, velocity clamping, acceleration bounds ($0.60\text{ m/s}^2$), and stochastic wheel slip simulation ($2\%$).
+- **High-Fidelity Rover Rendering**:
   - Motorized high-traction rubber drive tracks/treads.
   - Dual counter-rotating front sweeper brushes.
   - High-velocity center roller suction intake.
-  - 360° rotating LiDAR turret raycasting 36 scanner beams in real time.
+  - $360^\circ$ rotating LiDAR turret raycasting 36 scanner beams in real time.
 - **Dynamic Suction Physics**:
-  - Particle vortex that pulls nearby floor dust into the intake aperture.
+  - Particle vortex pulling nearby floor dust into the intake aperture.
   - Airflow exhaust trail behind the chassis.
-  - Real-time dust weight collection tracking ($g$) with multi-tiered suction profiles: **Eco** (1200 Pa), **Standard** (2000 Pa), and **Boost** (3000 Pa).
-- **Physical Charging Home Dock**: Authentic wall-mounted charging station with metallic brass spring contacts, status LED, and soft drop shadow.
+  - Real-time dust weight collection tracking ($g$) with multi-tiered suction profiles:
+    - **Eco**: $1200\text{ Pa}$ suction, $0.007\%/\text{s}$ power draw, $0.70\times$ dust absorption.
+    - **Standard**: $2000\text{ Pa}$ suction, $0.015\%/\text{s}$ power draw, $1.00\times$ dust absorption.
+    - **Boost**: $3000\text{ Pa}$ suction, $0.025\%/\text{s}$ power draw, $1.60\times$ dust absorption.
+- **Physical Charging Home Dock**: Wall-mounted charging station with metallic brass spring contacts, status LED, and soft drop shadow.
 
 ### 2. Obstacle Avoidance & Anti-Stuck System
-- **Obstacle Inflation Costmap**: Automatically inflates walls and furniture obstacles by $0.28\text{ m}$ (robot radius $0.25\text{ m} + 0.03\text{ m}$ safety margin) to prevent path planners from clipping table legs and tight corners.
+- **Obstacle Inflation Costmap (`inflateObstacles`)**: Automatically inflates walls and furniture obstacles by $0.28\text{ m}$ (robot radius $0.25\text{ m} + 0.03\text{ m}$ safety margin) to prevent path planners from clipping table legs and tight corners.
 - **Enhanced Dynamic Window Approach (DWA)**: Persistent velocity window modeling with 192 trajectory samples, zero-speed escape rotation, and clearance scoring.
-- **Autonomous Stuck Recovery**: Automatic stuck detection (triggers if position displacement is $< 0.06\text{ m}$ over 2 seconds) that initiates a multi-phase escape maneuver (reverse displacement $\to$ in-place rotation toward goal).
+- **Autonomous Stuck Recovery**: Automatic stuck detection (triggers if position displacement is $< 0.06\text{ m}$ over 2.0 seconds) that executes a two-phase escape maneuver (reverse displacement $\to$ in-place rotation toward goal).
 
 ### 3. Comprehensive Robotics Algorithm Suite
 - **Global Path Planning**:
@@ -36,21 +49,58 @@ An interactive robotics simulation, algorithm comparison, and benchmarking labor
   - **Dijkstra’s Algorithm**: Guaranteed uniform-cost baseline search without heuristic bias.
   - **D\* Lite**: Incremental heuristic replanner tailored for unknown or dynamic floor maps.
   - **RRT / RRT\***: Rapidly-exploring Random Tree with asymptotic optimality rewiring for complex geometry.
-- **Local Obstacle Avoidance**:
+- **Local Obstacle Avoidance & Navigation**:
   - **Dynamic Window Approach (DWA)**: Kinematically constrained velocity sampling in acceleration-limited space.
   - **Vector Field Histogram (VFH)**: Polar obstacle density histogram for smooth avoidance around moving entities.
 - **Area Coverage Planning**:
   - **Boustrophedon Cellular Decomposition**: Structured back-and-forth lawnmower sweep pattern.
   - **Spanning Tree Coverage (STC)**: Hamiltonian cycle on a coarse grid decomposition.
+  - **Lawnmower Coverage**: Systematic parallel sweeping line baseline.
+- **Localization & State Estimation**:
+  - **Extended Kalman Filter (EKF)**: Fuses wheel odometry with landmark measurements for continuous Gaussian state estimation ($x, y, \theta$).
+  - **Particle Filter (Monte Carlo Localization - MCL)**: Sample-based state estimation capable of handling arbitrary non-linear and multi-modal distributions.
+  - **Wheel Odometry**: Dead-reckoning differential wheel integration with drift accumulation modeling.
 
-### 4. Anthropic Claude Console Design & Model Cards
+### 4. Procedural Environments & Dynamic Hazards
+- **Diverse Room Presets**:
+  - **Multi-Room Apartment (`multi_room`)**: 4 connected zones (Living Room, Bedroom, Kitchen, Bathroom) with realistic doorways and distributed furniture.
+  - **Furnished Living Space (`furniture`)**: Realistic home floor plan populated with sofas, dining tables, chairs, beds, wardrobes, and desks.
+  - **Corridor & Branch Rooms (`corridor`)**: Central hallway branching into multiple side rooms.
+  - **Random Obstacles (`random`)**: Procedurally scattered barrier layout for stress-testing path planners.
+  - **Open Floor Arena (`empty`)**: Clean baseline arena for kinematics calibration.
+- **Dynamic Obstacles**: Autonomous moving entities (simulating household pets or walking humans) with real-time velocity vector prediction.
+- **Stochastic Dirt Patches**: Gaussian dirt regions with variable intensity, radius, and continuous cleaning degradation.
+
+### 5. Interactive Canvas Display Layers & Viewport
+- **Real-Time Toggleable Visualization Layers**:
+  - Planned path trajectory vs. actual odometry track.
+  - 360° LiDAR scanner rays and contact reflection points.
+  - DWA motion candidate velocity trajectories (192 arcs).
+  - A* Open Set frontier and Closed Set explored search tree.
+  - Dynamic obstacle velocity prediction vectors.
+  - Discrete occupancy grid and inflated costmap safety zones ($0.28\text{ m}$).
+  - Cleaned floor swath and coverage heatmaps.
+  - Dirt and dust distribution regions.
+- **Camera Viewport Controls**: Smooth zoom ($0.3\times$ to $4.5\times$), viewport panning, and single-click center reset.
+
+### 6. Benchmarking Engine & Telemetry Panel
+- **Multi-Algorithm Comparative Benchmarking**:
+  - Path length ($m$)
+  - Execution time ($ms$)
+  - Explored nodes / search iterations
+  - Area coverage ($m^2$ & $\%$)
+  - Collision events
+  - Total energy expenditure ($Wh$)
+- **Real-Time Telemetry Drawer**: Live battery capacity curve, dust bin weight, current suction mode, linear/angular velocity readouts, and dock docking status.
+
+### 7. Anthropic Claude Console Design System
 - **Claude Console Aesthetic**: Warm charcoal dark palette (`#141413`), border strokes (`#2b2a27`), pill selectors, and serif headers.
 - **Interactive Model Cards Showcase**:
   - **A\* Search**: Claude Blue (`#60a5fa`) with graph search topology.
   - **D\* Lite**: Claude Terracotta (`#d97757`) with dynamic graph repair.
   - **DWA Local**: Claude Sonnet Cream (`#f4efe6`) with kinematic trajectory arcs.
   - **Boustrophedon**: Claude Haiku Sage (`#b4d2c8`) with cellular decomposition sweeps.
-- **Collapsible Workbench**: Sliding left sidebar and floating telemetry telemetry drawer.
+- **Collapsible Workbench**: Sliding left sidebar, full-height canvas arena, and floating telemetry drawer.
 
 ---
 
@@ -225,7 +275,7 @@ If port 3000 is occupied by another process:
   # Kill the process
   kill -9 $(lsof -t -i :3000)
   # Or run on another port
-  npm run dev -- --port 3001
+  npm run dev -- --port 2001
   ```
 
 - **Windows (PowerShell)**:
@@ -235,7 +285,7 @@ If port 3000 is occupied by another process:
   # Stop process by PID (e.g., 1234)
   Stop-Process -Id 1234 -Force
   # Or run on another port
-  npm run dev -- --port 3001
+  npm run dev -- --port 2001
   ```
 
 ### Outdated Node Version
@@ -248,23 +298,27 @@ Ensure `node -v` outputs `v18.0.0` or higher. Node v20 LTS is recommended.
 
 ```
 smart-vacuum-lab/
+├── ROBOT.md                 # AI Model & robotics technical specifications index
+├── AGENTS.md                # Next.js agent framework conventions
+├── README.md                # Project overview and setup documentation
 ├── src/
-│   ├── algorithms/          # Path planning, local avoidance, and coverage algorithms
+│   ├── algorithms/          # Path planning, navigation, coverage & localization
 │   │   ├── planning/        # A*, Dijkstra, D* Lite, RRT, RRT*
 │   │   ├── navigation/      # Dynamic Window Approach (DWA), VFH
-│   │   ├── coverage/        # Boustrophedon, STC, Lawnmower
-│   │   └── interfaces.ts    # Algorithm interfaces & typing
+│   │   ├── coverage/        # Boustrophedon, Spanning Tree Coverage (STC), Lawnmower
+│   │   ├── localization/    # Extended Kalman Filter (EKF), Particle Filter, Wheel Odometry
+│   │   └── interfaces.ts    # Algorithm interfaces & typing contracts
 │   ├── components/
-│   │   ├── layout/          # MainApp layout with slide-in/out navigation
-│   │   ├── simulation/      # SimulationCanvas (Rover rendering) & controls
+│   │   ├── layout/          # MainApp layout with Claude Console workbench & navigation
+│   │   ├── simulation/      # SimulationCanvas (Rover rendering), controls & layer toggles
 │   │   ├── metrics/         # MetricsPanel & ComparisonPanel benchmarking engine
-│   │   └── algorithms/      # AlgorithmInfoPanel (algorithm cards & math notes)
+│   │   └── algorithms/      # AlgorithmInfoPanel (model cards & mathematical formulation)
 │   ├── simulation/
 │   │   ├── core/            # Grid models, physics, RNG, vector utilities
-│   │   ├── environment/     # Procedural room generators & obstacle inflation
-│   │   └── robot/           # Differential drive kinematics & LiDAR raycasting
+│   │   ├── environment/     # Procedural room generators & obstacle inflation (0.28m)
+│   │   └── robot/           # Differential drive kinematics & 36-ray LiDAR raycasting
 │   ├── store/
-│   │   └── simulationStore.ts  # Zustand global state manager
+│   │   └── simulationStore.ts  # Zustand global state manager & stuck recovery loop
 │   └── app/                 # Next.js App Router root layout & globals.css
 ├── public/                  # Static assets
 └── package.json             # Scripts & dependencies
