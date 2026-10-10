@@ -8,7 +8,8 @@ An interactive robotics simulation, algorithm comparison, and benchmarking labor
 [![React](https://img.shields.io/badge/React-19.3-blue?logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
-[![Guide: Report & PPT](https://img.shields.io/badge/Guide-Report%20%26%20PPT-blueviolet.svg)](PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md)
+[![Guide: Report & PPT](https://img.shields.io/badge/Guide-Report%20%26%20PPT%20(Part%201)-blueviolet.svg)](PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md)
+[![Blueprint: Part 2](https://img.shields.io/badge/Blueprint-Research%20%26%20Report%20(Part%202)-0284c7.svg)](PROJECT_RESEARCH_AND_REPORT_BLUEPRINT_PART2.md)
 [![Specification: ROBOT.md](https://img.shields.io/badge/Spec-ROBOT.md-d97757.svg)](ROBOT.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -16,7 +17,8 @@ An interactive robotics simulation, algorithm comparison, and benchmarking labor
 
 ## 📖 Quick Links & Documentation
 
-- [PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md](PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md) — **Academic Handover Guide**: Slide-by-slide blueprints for 2 presentations (PPT 1 & PPT 2), chapter-by-chapter report guide, and software-only framing.
+- [PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md](PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md) — **Academic Handover Guide (Part 1)**: Slide-by-slide blueprints for 2 presentations (PPT 1 & PPT 2), PEAS model, kinematics formulas, and software-only framing.
+- [PROJECT_RESEARCH_AND_REPORT_BLUEPRINT_PART2.md](PROJECT_RESEARCH_AND_REPORT_BLUEPRINT_PART2.md) — **Master Research Blueprint (Part 2)**: PBL Report template mapping, system architecture flowchart, master algorithm inventory, research questions (RQ1–RQ6), and 44-point verification checklist.
 - [ROBOT.md](ROBOT.md) — Comprehensive technical specification, kinematic equations, sensor models, and LLM context index.
 - [Algorithm Suite](#3-comprehensive-robotics-algorithm-suite) — Directory of all path planning, local avoidance, coverage, and localization algorithms.
 - [Academic Assignment Deliverables](#-academic-assignment--pbl-deliverables-pure-software-focus) — Overview of PEAS formulation and software testbed structure.
