@@ -1,11 +1,14 @@
 # Smart Vacuum Algorithm Lab (Rover)
 
-An interactive robotics simulation, algorithm comparison, and benchmarking laboratory for autonomous domestic vacuum cleaner agents. Developed as an engineering platform for the PBL project: **“Smart Vacuum Cleaner Agent for Intelligent Room Cleaning”**.
+An interactive robotics simulation, algorithm comparison, and benchmarking laboratory for autonomous domestic vacuum cleaner agents. Developed as an engineering platform for the FOA PBL project: **“Smart Vacuum Cleaner Agent for Intelligent Room Cleaning”**.
+
+> **Note on Project Scope**: This is a **100% pure software simulation and robotics AI workbench** (Software-in-the-Loop). All physical kinematics, differential-drive physics, sensor raycasting, and obstacle costmaps are mathematically modeled and rendered in code — **no physical hardware or microcontrollers required**.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.4-black?logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.3-blue?logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
+[![Guide: Report & PPT](https://img.shields.io/badge/Guide-Report%20%26%20PPT-blueviolet.svg)](PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md)
 [![Specification: ROBOT.md](https://img.shields.io/badge/Spec-ROBOT.md-d97757.svg)](ROBOT.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -13,10 +16,30 @@ An interactive robotics simulation, algorithm comparison, and benchmarking labor
 
 ## 📖 Quick Links & Documentation
 
+- [PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md](PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md) — **Academic Handover Guide**: Slide-by-slide blueprints for 2 presentations (PPT 1 & PPT 2), chapter-by-chapter report guide, and software-only framing.
 - [ROBOT.md](ROBOT.md) — Comprehensive technical specification, kinematic equations, sensor models, and LLM context index.
 - [Algorithm Suite](#3-comprehensive-robotics-algorithm-suite) — Directory of all path planning, local avoidance, coverage, and localization algorithms.
+- [Academic Assignment Deliverables](#-academic-assignment--pbl-deliverables-pure-software-focus) — Overview of PEAS formulation and software testbed structure.
 - [Cross-Platform Setup Guides](#-operating-system-installation--setup-guides) — Step-by-step installation for Linux, Windows, and macOS.
 - [Project Architecture](#%EF%B8%8F-project-architecture) — Codebase structure and module breakdown.
+
+---
+
+## 🎓 Academic Assignment & PBL Deliverables (Pure Software Focus)
+
+This repository fulfills the Project-Based Learning (PBL) curriculum for **Foundations of Artificial Intelligence (FOA)**.
+
+### 🚫 Hardware vs. Software Clarification
+- **Hardware components used**: **NONE**. No Arduino, no Raspberry Pi, no motor drivers, no physical wiring, no chassis fabrication.
+- **Software simulation approach**: High-fidelity virtual robotics laboratory running in modern web browsers (Next.js + React 19 + TypeScript + HTML5 Canvas).
+- **Core AI Concepts Modeled**:
+  - **Russell & Norvig PEAS Model**: Formally defined Performance measures, continuous 2D dynamic Environment, simulated differential-drive Actuators, and raycast Sensors.
+  - **Graph & Continuous Path Planning**: Dijkstra, A* (Octile heuristic), D* Lite (incremental replanning), and RRT / RRT*.
+  - **Reactive Local Avoidance**: Dynamic Window Approach (DWA) with 192 trajectory evaluations and Vector Field Histogram (VFH).
+  - **Complete Area Coverage Planning (CPP)**: Boustrophedon Cellular Decomposition, Spanning Tree Coverage (STC), and Lawnmower sweeping.
+  - **Probabilistic State Estimation**: Extended Kalman Filter (EKF) and Adaptive Monte Carlo Localization (AMCL) particle filtering.
+
+For detailed slide decks (PPT 1 & PPT 2) and full academic report drafting guidelines, refer to **[PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md](PROJECT_SUMMARY_FOR_REPORT_AND_PPT.md)**.
 
 ---
 
